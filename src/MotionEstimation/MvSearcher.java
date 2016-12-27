@@ -66,6 +66,7 @@ public class MvSearcher extends JFrame {
 
 	BufferedImage targetImg = null;
 	BufferedImage referenceImg = null;
+	BufferedImage resultImg = null;
 
 	public ImagePanel targetImgPanel;
 	public ImagePanel referenceImgPanel;
@@ -90,9 +91,36 @@ public class MvSearcher extends JFrame {
 		RunBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				long startTime = System.currentTimeMillis();// 获取当前时间
-				searcher.searchMotionVectors();
+				ArrayList<MotionVector> resultVector = searcher.searchMotionVectors();
 				long endTime = System.currentTimeMillis();
 				messageField.setText("程序运行时间：" + (endTime - startTime) + "ms");
+				
+				JFrame resultframe = new JFrame("Result");
+				ImagePanel resultImgPanel = new ImagePanel();
+				resultframe.add(resultImgPanel,BorderLayout.CENTER);
+				
+				int Width = referenceImg.getWidth();
+				int Height = referenceImg.getHeight();
+				int macroBlockSize = searcher.macroBlockSize;
+				
+				BufferedImage resultImg = new BufferedImage(Width, Height, referenceImg.getType());
+				int i = 0;
+				for (int x = 0; x < Width; x += macroBlockSize)
+					for (int y = 0; y < Height; y += macroBlockSize){
+						int rgbArray[] = new int[macroBlockSize*macroBlockSize];
+						int widthRGB = macroBlockSize, heightRGB = macroBlockSize;
+						if(x + macroBlockSize > Width)
+							widthRGB = Width - x;
+						if(y + macroBlockSize > Height)
+							heightRGB = Height - y;
+						referenceImg.getRGB(x + resultVector.get(i).u, y + resultVector.get(i).v, widthRGB, heightRGB, rgbArray, 0, widthRGB);
+						resultImg.setRGB(x, y, widthRGB, heightRGB, rgbArray, 0, widthRGB);
+						i++;
+					}
+				resultImgPanel.setImage(resultImg);
+				resultframe.setSize(960, 540);
+				repaint();
+				resultframe.setVisible(true);
 			}
 		});
 		

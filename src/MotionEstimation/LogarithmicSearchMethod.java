@@ -20,7 +20,8 @@ public class LogarithmicSearchMethod extends MontionVectorsSearcher {
 		int cy = 0;
 		
 		while (!last) {
-//			System.out.println("cx cy : " + cx + " " + cy);
+			if (x == 0 && y == 0)
+			System.out.println("cx cy : " + cx + " " + cy);
 			
 			for (int i = -offset; i <= offset; i+=offset)
 				for (int j = -offset; j <= offset; j+=offset) {
@@ -28,8 +29,8 @@ public class LogarithmicSearchMethod extends MontionVectorsSearcher {
 					int curMAD = calMAD(x, y, i + cx, j + cy);
 					if (curMAD < minMAD) {
 						minMAD = curMAD;
-						mv.u = i;
-						mv.v = j;
+						mv.u = i + cx;
+						mv.v = j + cy;
 					}
 				}
 			if (offset == 1) last = true;

@@ -6,7 +6,7 @@ import java.util.ArrayList;
 
 public class HierarchicalSearchMethod extends MontionVectorsSearcher {
 
-	private int K = 3;
+	private int K = 2;
 	ArrayList<BufferedImage> targetFrameLevels = new ArrayList<BufferedImage>();
 	ArrayList<BufferedImage> referenceFrameLevels = new ArrayList<BufferedImage>();
 
@@ -37,8 +37,13 @@ public class HierarchicalSearchMethod extends MontionVectorsSearcher {
 
 		ArrayList<MotionVector> mvList = new ArrayList<MotionVector>();
 		for (int x = 0; x < targetFrame.getWidth(); x += macroBlockSize)
-			for (int y = 0; y < targetFrame.getHeight(); y += macroBlockSize)
-				mvList.add(searchMotionVector(x, y));
+			for (int y = 0; y < targetFrame.getHeight(); y += macroBlockSize){
+				MotionVector mv = searchMotionVector(x, y);
+				System.out.println(x + " " + y + " " + mv.u + " " + mv.v);
+				
+				mvList.add(mv);
+			}
+//				mvList.add(searchMotionVector(x, y));
 		return mvList;
 	}
 
@@ -56,6 +61,7 @@ public class HierarchicalSearchMethod extends MontionVectorsSearcher {
 		int vk = mv.v;
 		
 		boolean last = false;
+		if (k == 0) last = true;
 
 		while (!last) {
 
@@ -66,20 +72,20 @@ public class HierarchicalSearchMethod extends MontionVectorsSearcher {
 			k = k - 1;
 			
 			int minMAD = Integer.MAX_VALUE;
-			for (int i = mv.u - 1; i <= mv.u + 1; i++)
-				for (int j = mv.v - 1; j <= mv.v + 1; j++) {
+			for (int i = uk - 1; i <= uk + 1; i++)
+				for (int j = vk - 1; j <= vk + 1; j++) {
 					int curMAD = calMAD(xk, yk, i, j, k);
 					if (curMAD < minMAD) {
 						minMAD = curMAD;
-						uk = i;
-						vk = j;
+						mv.u = i;
+						mv.v = j;
 					}
 				}
 
 			if (k == 0) last = true;
 			
-			mv.u = uk;
-			mv.v = vk;
+			uk = mv.u;
+			vk = mv.v;
 
 		}
 
@@ -96,8 +102,8 @@ public class HierarchicalSearchMethod extends MontionVectorsSearcher {
 		for (int k = 0; k < macroBlockSize / (1 << level); k++)
 			for (int l = 0; l < macroBlockSize / (1 << level); l++)
 				try {
-					sum += Math.abs(targetFrame.getRGB(x + k, y + l)
-							& 0xff - referenceFrame.getRGB(x + i + k, y + j + l) & 0xff);
+					sum += Math.abs((targetFrame.getRGB(x + k, y + l)
+							& 0xff) - (referenceFrame.getRGB(x + i + k, y + j + l) & 0xff));
 				} catch (Exception e) {
 					return Integer.MAX_VALUE;
 				}
